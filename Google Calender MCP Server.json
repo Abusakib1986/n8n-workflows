@@ -149,6 +149,20 @@
       "typeVersion": 1,
       "id": "9d1a1da7-3c2d-43a1-910e-480573331878",
       "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "url": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('URL', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        368,
+        -64
+      ],
+      "id": "8686141b-8cd0-479d-93a4-006f88c62a28",
+      "name": "HTTP Request"
     }
   ],
   "pinData": {},
@@ -185,6 +199,17 @@
           }
         ]
       ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "Calender MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -195,7 +220,7 @@
     "timezone": "Asia/Dhaka",
     "callerPolicy": "workflowsFromSameOwner"
   },
-  "versionId": "ff448089-588f-4148-bf24-5d377b74df96",
+  "versionId": "78c221ea-f3bb-4d9b-bba9-4e053e7a4fc7",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "10645510aa68e99f47fa86c60c3a28717af873722e633ed2827b2eb68617167a"
