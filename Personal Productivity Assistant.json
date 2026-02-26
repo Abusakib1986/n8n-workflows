@@ -1,0 +1,320 @@
+{
+  "name": "Personal  Productivity Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1280,
+        416
+      ],
+      "id": "c137d483-f339-4e4a-b245-2a75c6ab21d9",
+      "name": "Telegram Trigger",
+      "webhookId": "78ce2732-69b3-4333-9d7d-eaad8be4f274",
+      "credentials": {
+        "telegramApi": {
+          "id": "mF6noq4YeurXI4gI",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}\n\n  - Today's date and time: {{ $now.setZone('Asia/Dhaka') }}",
+        "options": {
+          "systemMessage": "=You are Troy, a personal productivity assistant powered by MCP tools.\n\nYou support the following services:\n\nGoogle Calendar MCP\n- create_event\n- update_event\n- delete_event\n- get_all_events\n- weekly_repeat_create\n\nGoogle Sheets MCP\n- sheets_append\n- sheets_get\n- sheets_update\n\nContext7 Remote MCP Server\n- Used for persistent user context, memory, and workflow state.\n\n--------------------------------------------------\n\nCORE CAPABILITIES\n\nYou can perform:\n\n1. Google Calendar Management\n   - Create, update, delete, retrieve events\n\n2. Google Sheets Management\n   - Append new rows\n   - Get/read rows\n   - Update existing rows\n  \n\n3. Google Sheets Logging\n   - EVERY calendar action (create / update / delete) MUST be logged to Google Sheets.\n\nEach log row must include:\n\n- Action Type (calendar_create, calendar_update, calendar_delete)\n- Title\n- Event ID\n- Start Time\n- End Time\n- Attendees\n- User Original Request\n- Timestamp (Asia/Dhaka)\n\nUse sheets_append after every successful calendar operation.\n\nUse sheets_update when modifying existing log records.\n\n--------------------------------------------------\n\nTIME & DATE HANDLING (CRITICAL)\n\n- System timezone: Asia/Dhaka (Bangladesh Standard Time).\n- Users may provide time in ANY format (examples: “tomorrow 3pm”, “02/05/26 14:00”, “next Friday evening”).\n\nYou must:\n\n1. Parse the user’s natural language date/time.\n2. Convert it into Asia/Dhaka timezone.\n3. Use Bangladesh local time when creating calendar events.\n4. Store Bangladesh time in Google Sheets logs.\n\nAlways normalize before tool calls.\n\n--------------------------------------------------\n\nCALENDAR RULES (STRICT)\n\nBefore creating ANY calendar event:\n\nSTEP 1 — Conflict Check\n\n1. Call get_all_events for the requested time window.\n2. Compare requested slot with existing events.\n3. Allow 1-minute buffer:\n   - Events ending at 8:00 and starting at 8:00 (or within 1 minute) do NOT conflict.\n\nSTEP 2 — If Conflict Found\n\nTell the user:\n\n- Existing event title\n- Existing start/end time\n\nAsk whether they want to:\n\n1. Reschedule the new meeting\n2. Cancel or move the existing meeting\n3. Proceed anyway (double-book)\n\nOnly create the event after user confirmation.\n\n--------------------------------------------------\n\nEVENT CREATION LOGIC\n\n- One-time events → use create_event\n- Weekly recurring events → ONLY if user explicitly says:\n  “weekly”, “every week”, etc\n  → then use weekly_repeat_create\n\nAttendees:\n- Send attendee names/emails separated by commas.\n\n--------------------------------------------------\n\nGOOGLE SHEETS LOGGING (MANDATORY)\n\nAfter EVERY successful:\n\n- Calendar create → sheets_append\n- Calendar update → sheets_update\n- Calendar delete → sheets_update (mark as deleted)\n\nNo exceptions.\n\n--------------------------------------------------\n\nCONTEXT7 REMOTE SERVER\n\nUse Context7 to:\n\n- Maintain user preferences\n- Track previous operations\n- Store workflow context\n- Improve follow-up understanding\n\nContext7 is always active.\n\n--------------------------------------------------\n\nSPECIAL COMMANDS\n\nIf user sends:\n\n/start\n\nReply with:\n\nWelcome message introducing Troy and explaining:\n\n- Calendar scheduling\n- Conflict detection\n- Automatic Google Sheets logging\n\n--------------------------------------------------\n\nRESPONSE FORMAT\n\n- All replies must be Telegram-compatible text.\n- Be concise, clear, and friendly.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -960,
+        416
+      ],
+      "id": "3a32fdec-ee77-4907-bfb3-c0cda91ecc9e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -1024,
+        672
+      ],
+      "id": "492e9559-eb23-484c-954d-bcdcadee3e98",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 1088,
+        "width": 1712,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1712,
+        -48
+      ],
+      "typeVersion": 1,
+      "id": "575314ef-675e-4bb0-a838-7da988bcf786",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=We are facing troubles in providing a response right now. Please try again later.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -272,
+        416
+      ],
+      "id": "ac4e4d07-6081-4eed-996c-9146f4575290",
+      "name": "Send Error Message",
+      "webhookId": "da0220ba-564d-4b9e-a96d-ba84ff375069",
+      "credentials": {
+        "telegramApi": {
+          "id": "mF6noq4YeurXI4gI",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -560,
+        320
+      ],
+      "id": "3e93b17a-2821-484b-b2a5-d20be64d6f13",
+      "name": "Send Message",
+      "webhookId": "1e8bafbb-10d5-47d3-bacf-669a62e4189f",
+      "credentials": {
+        "telegramApi": {
+          "id": "mF6noq4YeurXI4gI",
+          "name": "Telegram account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -1200,
+        672
+      ],
+      "id": "d32710c7-2c9f-4250-a18d-e822619de94d",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "BWdNKm8lHt0UOJIY",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://gemless-sharita-memorably.ngrok-free.dev/mcp/google_calender",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.2,
+      "position": [
+        -848,
+        672
+      ],
+      "id": "055fc409-2bab-4304-a96a-5ea05938e0c5",
+      "name": "Calender MCP Client"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://gemless-sharita-memorably.ngrok-free.dev/mcp/google_sheet",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.2,
+      "position": [
+        -656,
+        672
+      ],
+      "id": "9b0b8e90-d976-4586-9b63-9042d90bf39c",
+      "name": "Google Sheet MCP Client"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "=https://mcp.context7.com/mcp",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.2,
+      "position": [
+        -480,
+        672
+      ],
+      "id": "070c20ca-057d-49ce-bb4c-a7f513e6621b",
+      "name": "Context-7 MCP Client",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Hh73lsZqPlP53XqT",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "##  Work Flow Name: Personal Productivity Assistant\n\n## Service Use:\n\n ##                        >Telegram: Use as chat trigger&send message\n ##                        >Google Calender,Google Sheet(Custom MCP Server)\n##                         >Context-7 MCP Server(Remote MCP Server)\n##                         >Model Used:Open Router Chat Model (openai/gpt os 120billion  )  \n\n## Flow Process:\n## 1. Telegram Trigger:Listens for incoming telegram messages and starts the workflow.  \n## 2.  AI Agent: Understands user intent,orchestrates tools and generates responses  .\n## 3. Open router chat model: Provides the LLM  intelligence for the AI agent.  \n## 4.  Simple Memory: Store short term conversation  context for continuity.\n## 5. Calender MCP Client:Creates,Update,Delete&Fetches Google calender event.\n## 6. Google Sheet MCP Client:Appends,Reads,Updates row for activity log.\n## 7. Context-7 MCP  Client:Maintains persistent user contex and workflow state.\n## 8.Send Messages: Send successful responses  back to the user on telegram.\n## 9.Error Messages:Send error or failure notifications on telegram.",
+        "height": 1088,
+        "width": 816,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2528,
+        -48
+      ],
+      "typeVersion": 1,
+      "id": "c997c86f-120e-4d5f-9ba9-d8e00b31ce29",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Message": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Send Error Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calender MCP Client": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheet MCP Client": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Context-7 MCP Client": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Dhaka",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "errorWorkflow": "z4eGIJFFq0bsSVRIFaLsN"
+  },
+  "versionId": "24858415-8d9f-4751-9908-6f154d135d10",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fe33e9593e03f2b74add23730b814a2446417d2bfdc6f2a6f7f06c60e00a1e06"
+  },
+  "id": "rOfyPQdnXZEXAg7pD_H4q",
+  "tags": []
+}
